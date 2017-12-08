@@ -20,16 +20,24 @@ class GenderDetector(object):
         self.c = 10
 
     def hps(self, arr):
+        """
+        Calculate the hps algorithm.
+
+        :param arr: Array that contains the audio frequencies after applying
+        the fft
+        :return: Array that contains the fundamental frequencies of the audio
+        signalstring with language and confidence interval
+        """
         r = arr
         d2 = []
         d3 = []
         i = 0
-        # Diesmar en 2
+        # Diezmar en 2
         for v in arr:
             if i % 2 == 0:
                 d2.append(v)
             i += 1
-        # Diesmar en 3
+        # Diezmar en 3
         i = 0
         for v in arr:
             if i % 3 == 0:
@@ -50,6 +58,16 @@ class GenderDetector(object):
         return r
 
     def calculate_spectrum_cepstrum(self, y, fs):
+        """
+        Calculates frequency spectrum and cepstrum.
+
+        :param y: Array that contains the samples in the time domain
+        of the audio signal
+        :param fs: Integer that contains the sampling frequency
+        :return y: Array that contains the espectrum of the audio signal
+        :return freq: Array that contains the frequencies of the audio signal
+        :return ceps: Array that contains cepstrum of the audio signal
+        """
         # Hay algunos audios que son estereo, se toma un lado
         y = y[:, 0] if y.ndim > self.mono else y
         n = len(y)
@@ -64,6 +82,18 @@ class GenderDetector(object):
         return y, freq, ceps
 
     def calculate_modulation_index(self, y, mindom, maxdom, dfrange):
+        """
+        Calculates the modulation index of frequency spectrum.
+
+        :param y: Array that contains the samples in the time domain
+        of the audio signal
+        :param mindom: Float with minimum of dominant frequency measured across
+        acoustic signal
+        :param maxdom: Float with maximum of dominant frequency measured across
+        acoustic signal
+        :param dfrange: Float with range of dominant frequency measured across acoustic signal
+        :return modindx: Float with modulation index value
+        """
         changes = []
         for j in range(len(y) - 1):
             change = abs(y[j] - y[j + 1])
@@ -72,6 +102,17 @@ class GenderDetector(object):
         return modindx
 
     def get_n_fundamental_frequencies(self, n, arr):
+        """
+        Calculates the modulation index of frequency spectrum.
+
+        :param y: Array that contains the frequencies of the audio signal
+        :param mindom: Float with minimum of dominant frequencymeasured across
+        acoustic signal
+        :param maxdom: Float with maximum of dominant frequencymeasured across
+        acoustic signal
+        :param dfrange: Float with range of dominant frequency measured across acoustic signal
+        :return modindx: Float with modulation index value
+        """
         fundamental = []
         i = 1
         for v in arr:
@@ -82,6 +123,40 @@ class GenderDetector(object):
         return fundamental
 
     def calculate_all_spec_props(self, frq, Y, ceps, esp_frecuencia_pairs):
+        """
+        Calculates all the acoustic properties including
+        the fundamental frequencies.
+
+        :param Y: Array that contains the power spectrum (decibels)
+        :param frq: Array that contains the frequencies of the audio signal
+        :param ceps: Array that contains cepstrum of the audio signal
+        :param esp_frecuencia_pairs: lista that contains tuples of the form:
+        (decibels (axis Y), frecuency(axis X))
+
+        :return : Array with the follow structure:
+        mean frequency (in kHz),
+        standard deviation of frequency,
+        median frequency,
+        first quantile,
+        third quantile,
+        interquantile range,
+        skewness,
+        kurtosis,
+        spectral entropy,
+        spectral flatness,
+        peak frequency,
+        average of fundamental frequency (espectrum),
+        minimum fundamental frequency (espectrum),
+        maximum fundamental frequency (espectrum),
+        average of dominant frequency (cepstrum),
+        minimum of dominant frequency (cepstrum),
+        maximum of dominant frequency (cepstrum),
+        modulation index,
+        fundamental frequency 1,
+        fundamental frequency 2,
+        .....,
+        fundamental frequency 30
+        """
         props = []
 
         mean = np.mean(frq)
@@ -144,6 +219,15 @@ class GenderDetector(object):
         return np.array(props + fundamental)
 
     def preprocess(self, fs, signal):
+        """
+        Preprocess the de audio signal.
+
+        :param fs: Integer that contains the sampling frequency
+        :param signal: Array that contains the samples in the time domain
+        of the audio signal
+
+        :return : Array with all the main features of the audio signal
+        """
         # NUMERO TOTAL DE MUESTRAS
         mt = signal.size
         print("NUMERO DE MUESTRAS EN EL TIEMPO : ", mt)
@@ -175,16 +259,32 @@ class GenderDetector(object):
     # ///////////////////////////////////////////////////////
 
     def process(self, fs, signal):
+        """
+        Preprocess and clasify the de audio signal.
+
+        :param fs: Integer that contains the sampling frequency
+        :param signal: Array that contains the samples in the time domain
+        of the audio signal
+
+        :return :Dictionary with the result of the classification
+        """
+        response = {
+            "data": {
+                "gender": {
+                    "id": "",
+                    "name": ""
+                },
+                "detectionDate": ""
+            }
+        }
         signal = self.preprocess(fs, signal)
         signal = np.array(signal).reshape((1, -1))
-        print(signal)
         pred_xgb = self.model.predict(signal)
         result = pred_xgb[0].strip()
-        print(result)
         result = 'FEMALE' if result == 'F' else 'MALE'
 
-        response = {
-            'gender': result,
-            'detectionDate': date.today().isoformat()
-        }
+        response["data"]["gender"]["id"] = result
+        response["data"]["gender"]["name"] = ("The gender of this person is : "
+                                              + result)
+        response["data"]["detectionDate"] = date.today().isoformat()
         return response

@@ -91,27 +91,25 @@ class GenderDetector(object):
         acoustic signal
         :param maxdom: Float with maximum of dominant frequency measured across
         acoustic signal
-        :param dfrange: Float with range of dominant frequency measured across acoustic signal
+        :param dfrange: Float with range of dominant frequency measured across
+        acoustic signal
         :return modindx: Float with modulation index value
         """
         changes = []
         for j in range(len(y) - 1):
             change = abs(y[j] - y[j + 1])
             changes.append(change)
-        modindx = 0 if(mindom == maxdom) else np.mean(changes) / dfrange
+        modindx = 0. if(mindom == maxdom) else np.mean(changes) / dfrange
+        print(modindx)
         return modindx
 
     def get_n_fundamental_frequencies(self, n, arr):
         """
-        Calculates the modulation index of frequency spectrum.
+        Obtain the n fundamental frequencies of the spectrum.
 
-        :param y: Array that contains the frequencies of the audio signal
-        :param mindom: Float with minimum of dominant frequencymeasured across
-        acoustic signal
-        :param maxdom: Float with maximum of dominant frequencymeasured across
-        acoustic signal
-        :param dfrange: Float with range of dominant frequency measured across acoustic signal
-        :return modindx: Float with modulation index value
+        :param n: Number of fundamental frequencies to obtain
+        :param arr: Array that contains the frequencies of the audio signal
+        :return : Array with the fundamental frequencies
         """
         fundamental = []
         i = 1
@@ -214,8 +212,7 @@ class GenderDetector(object):
 
         fundamental = self.get_n_fundamental_frequencies(
             self.c, esp_frecuencia_pairs)
-        print("p:", props)
-        print("f", fundamental)
+
         return np.array(props + fundamental)
 
     def preprocess(self, fs, signal):
@@ -229,18 +226,12 @@ class GenderDetector(object):
         :return : Array with all the main features of the audio signal
         """
         # NUMERO TOTAL DE MUESTRAS
-        mt = signal.size
-        print("NUMERO DE MUESTRAS EN EL TIEMPO : ", mt)
         Y, frq, ceps = self.calculate_spectrum_cepstrum(signal, fs)
-        print("NUMERO DE MUESTRAS EN EL LA FRECUENCIA : ", frq.size)
         # Hacemos lista de (decibeles(Y), frecuencia(x)) tuples
         esp_frecuencia_pairs = [(Y[i], frq[i]) for i in range(len(Y))]
         # APLICAMOS FILTRO DE FRECUENCIAS
         esp_frecuencia_pairs = [(Y[i], frq[i]) for i in range(
             len(Y)) if frq[i] > self.min_frq and frq[i] < self.max_frq]
-        print(
-            "NUMERO DE MUESTRAS EN EL LA FRECUENCIA DESPUES DE FLITRO : ",
-            len(esp_frecuencia_pairs))
         # FRECUENCIAS FILTRADAS
         esp_aux = np.array(esp_frecuencia_pairs)
         frq = esp_aux[:, 1]

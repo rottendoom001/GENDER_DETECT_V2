@@ -4,16 +4,14 @@ test_gender_detector
 ----------------------------------
 Tests for `gender_detector` module.
 """
-#import sys
 import numpy as np
 import scipy.io.wavfile
-#sys.path.append("..")
 from gender_detector import GenderDetector
-
+from io import BytesIO
 
 def test_hps():
     """
-    Test the function hps.
+    Test the hps function.
     """
     arr = [255, 255, 200, 300, 500, 100, 600, 0]
     expected = [
@@ -32,7 +30,7 @@ def test_hps():
 
 def test_calculate_spectrum_cepstrum_mono():
     """
-    Test the function calculate_spectrum_cepstrum
+    Test the calculate_spectrum_cepstrum function
     when the signal is mono.
     """
     arr = [255, 255, 200, 300, 500, 100, 600, 0]
@@ -61,7 +59,7 @@ def test_calculate_spectrum_cepstrum_mono():
 
 def test_calculate_spectrum_cepstrum_stereo():
     """
-    Test the function calculate_spectrum_cepstrum
+    Test the calculate_spectrum_cepstrum function
     when the signal is stereo.
     """
     arr = [
@@ -97,7 +95,7 @@ def test_calculate_spectrum_cepstrum_stereo():
 
 def test_calculate_modulation_index():
     """
-    Test the function calculate_modulation_index.
+    Test the calculate_modulation_index function.
     """
     arr = [255, 255, 200, 300, 500, 100, 600, 0]
     arr = np.array(arr)
@@ -113,7 +111,7 @@ def test_calculate_modulation_index():
 
 def test_calculate_modulation_index_zero():
     """
-    Test the function calculate_modulation_index when
+    Test the calculate_modulation_index function when
     mindom == maxdom.
     """
     arr = [255, 255, 200, 300, 500, 100, 600, 0]
@@ -130,7 +128,7 @@ def test_calculate_modulation_index_zero():
 
 def test_get_n_fundamental_frequencies():
     """
-    Test the function get_n_fundamental_frequencies.
+    Test the get_n_fundamental_frequencies function.
     """
     arr = [
         (1433045920722.5535,
@@ -162,7 +160,7 @@ def test_get_n_fundamental_frequencies():
 
 def test_calculate_all_spec_props():
     """
-    Test the function calculate_all_spec_props.
+    Test the calculate_all_spec_props function.
     """
     expected = [8.26875000e+03, 6.16316236e+03,
                 8.26875000e+03, 4.13437500e+03,
@@ -214,7 +212,7 @@ def test_calculate_all_spec_props():
 
 def test_preprocess():
     """
-    Test the function preprocess.
+    Test the preprocess function.
     """
     inputFileName = './tests/wav/1F.wav'
     fs, signal = scipy.io.wavfile.read(inputFileName)
@@ -233,7 +231,7 @@ def test_preprocess():
 
 def test_process():
     """
-    Test the function process.
+    Test the process function.
     """
     response = {
         "data": {
@@ -251,3 +249,23 @@ def test_process():
         response["data"]["gender"]["id"] == result["data"]["gender"]["id"] and
         response["data"]["gender"]["name"] == result["data"]["gender"]["name"]
     )
+
+'''
+fs, signal = scipy.io.wavfile.read('./tests/wav/1F.wav')
+print ("fs:", fs)
+for value in range(0, 40):
+    print(signal[value])
+
+print ("/////////////////")
+
+f = open('./tests/wav/1F.bin', 'rb')
+bynary_data = f.read()
+
+f2 = BytesIO(bynary_data)
+#fs, signal = process_wav_binary(f2)
+fs, signal = scipy.io.wavfile.read(f2)
+print ("fs:", fs)
+for value in range(0, 40):
+    print(signal[value])
+f.close()
+'''

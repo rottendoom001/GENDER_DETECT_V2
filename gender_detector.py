@@ -3,6 +3,11 @@ import pickle
 from scipy.stats import kurtosis, skew, entropy, gmean
 from datetime import date
 
+SUB_CHUNK_1_SIZE = 16
+NORMAL_HEADER_SIZE = 16
+SAMPLE_RATE_1 = 25
+SAMPLE_RATE_0 = 24
+HEADER_SIZE = 44
 
 class GenderDetector(object):
     """
